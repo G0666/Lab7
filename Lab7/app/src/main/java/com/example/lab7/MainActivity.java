@@ -1,4 +1,5 @@
 package com.example.lab7;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -71,7 +72,16 @@ public class MainActivity extends AppCompatActivity {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    progressRabbit += 3;
+
+                    // 在 UI 線程上更新 SeekBar 和 progressRabbit
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            progressRabbit += 3;
+                            sb_rabbit.setProgress(progressRabbit);
+                        }
+                    });
+
                     Message msg = new Message();
                     msg.what = 1;
                     handler.sendMessage(msg);
@@ -88,14 +98,32 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        e.printStackTrace(); // 印出異常堆疊
                     }
-                    progressTurtle += 1;
-                    sb_turtle.setProgress(progressTurtle);
-                    if (progressTurtle >= 100 && progressRabbit < 100) {
-                        showToast("烏龜勝利");
-                        btn_start.setEnabled(true);
-                    }
+
+                    // 在 UI 線程上更新 SeekBar 和 progressTurtle
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            progressTurtle += 1;
+                            sb_turtle.setProgress(progressTurtle);
+                        }
+                    });
+
+                    Message msg = new Message();
+                    msg.what = 2;
+                    handler.sendMessage(msg);
+                }
+
+                // 檢查烏龜是否勝利
+                if (progressTurtle >= 100 && progressRabbit < 100) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            showToast("烏龜勝利");
+                            btn_start.setEnabled(true);
+                        }
+                    });
                 }
             }
         }).start();
